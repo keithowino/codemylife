@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Rocket</title>
+		<style>
+			* {
+				box-sizing: border-box;
+				padding: 0;
+				margin: 0;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+
+			.app {
+				width: 100vw;
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				background-color: rgb(200, 200, 200);
+			}
+
+			.header {
+				width: 100%;
+				background-color: #fff;
+				padding: 1em;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.title {
+				font-size: 2em;
+			}
+
+			.navbar {
+				width: 50%;
+				font-size: 1.5em;
+				display: flex;
+				align-items: center;
+				justify-content: space-evenly;
+			}
+
+			.adder {
+				margin: 1em 0;
+				width: 100%;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+
+			input {
+				border: 0;
+				outline: 0;
+				background-color: transparent;
+				font-size: 1.5em;
+				border-bottom: 1px solid teal;
+				margin: 1em 0;
+			}
+
+			.button {
+				padding: 1em;
+				border-radius: 1em;
+				background-color: teal;
+				color: #fff;
+				font-weight: bolder;
+				cursor: pointer;
+			}
+
+			.content {
+				width: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: space-evenly;
+				flex-wrap: wrap;
+			}
+
+			.card {
+				width: 30%;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+				padding: 1em;
+				background-color: #fff;
+				margin: 1em;
+			}
+
+			.card > .name {
+				font-size: 2em;
+			}
+
+			.card > .age {
+				font-size: 1.5em;
+				color: rgb(100, 100, 100);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="app">
+			<div class="header">
+				<div class="title">Firebase Rocket</div>
+				<div class="navbar">
+					<div class="opt">Home</div>
+					<div class="opt">About</div>
+					<div class="opt">Contact</div>
+				</div>
+			</div>
+			<div class="adder">
+				<div class="title"></div>
+				<input type="text" id="name" placeholder="Name" />
+				<input type="number" id="age" placeholder="Age" />
+				<button type="button" class="button" onclick="addUser()">
+					ADD
+				</button>
+			</div>
+			<div class="content">
+				<!-- <div class="card">
+					<div class="name">
+						<p>khalisi Benna</p>
+					</div>
+					<div class="age">
+						<p>19</p>
+					</div>
+				</div> -->
+			</div>
+		</div>
+
+		<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-firestore.js"></script>
+		<script src="./firebase.config.js"></script>
+		<script>
+			const get = (a) => {
+				return document.querySelector(a);
+			};
+
+			const create = (a) => {
+				return document.createElement(a);
+			};
+
+			const makeCard = (a) => {
+				let card = create("div");
+				let name = create("div");
+				let age = create("div");
+
+				name.innerText = a.name;
+				age.innerText = a.age;
+
+				card.setAttribute("class", "card");
+				name.setAttribute("class", "name");
+				age.setAttribute("class", "age");
+
+				card.append(name);
+				card.append(age);
+
+				get(".content").append(card);
+			};
+
+			const addUser = () => {
+				const data = {
+					name: get("#name").value,
+					age: Number(get("#age").value),
+				};
+
+				db.collection("users")
+					.add({
+						name: data.name,
+						age: data.age,
+					})
+					.then((data) => {
+						makeCard(data);
+					});
+			};
+
+			db.collection("users")
+				.get()
+				.then((data) => {
+					data.forEach((doc) => {
+						makeCard(doc.data());
+					});
+				});
+		</script>
+	</body>
+</html>
