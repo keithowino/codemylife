@@ -3,6 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
 		<title>Firebase Rocket - Pickaxe & Shovel</title>
 		<style>
 			* {
@@ -66,6 +67,14 @@
 				color: #fff;
 				font-weight: bolder;
 				cursor: pointer;
+				border: none;
+				outline: none;
+				transition: all;
+				transition-duration: 3ms;
+			}
+
+			.button:hover {
+				background-color: rgb(3, 154, 154);
 			}
 
 			.content {
@@ -74,6 +83,16 @@
 				align-items: center;
 				justify-content: space-evenly;
 				flex-wrap: wrap;
+			}
+
+			.uesr-loader {
+				padding: 4em 0;
+				border: 2px dotted #000;
+				width: 50%;
+				border-radius: 8px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 			}
 
 			.card {
@@ -130,6 +149,39 @@
 				return document.createElement(a);
 			};
 
+			const setLoading = (isLoading) => {
+				const container = document.querySelector(".content");
+
+				let userLoader = create("div");
+				userLoader.innerText = "Loading users...";
+
+				userLoader.setAttribute("class", "uesr-loader");
+
+				if (isLoading) {
+					container.append(userLoader);
+				} else {
+					container.innerHTML = "";
+				}
+			};
+
+			document.addEventListener("DOMContentLoaded", async () => {
+				try {
+					setLoading(true);
+
+					const snapshot = await db.collection("users").get();
+
+					setLoading(false);
+
+					snapshot.forEach((doc) => {
+						makeCard(doc.data());
+					});
+				} catch (error) {
+					document.querySelector(".content").innerHTML =
+						"<div>Error loading data</div>";
+					console.error(error);
+				}
+			});
+
 			const makeCard = (a) => {
 				let card = create("div");
 				let name = create("div");
@@ -159,18 +211,13 @@
 						name: data.name,
 						age: data.age,
 					})
-					.then((data) => {
-						makeCard(data);
+					.then(() => {
+						makeCard({
+							name: data.name,
+							age: data.age,
+						});
 					});
 			};
-
-			db.collection("users")
-				.get()
-				.then((data) => {
-					data.forEach((doc) => {
-						makeCard(doc.data());
-					});
-				});
 		</script>
 	</body>
 </html>
