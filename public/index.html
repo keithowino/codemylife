@@ -85,7 +85,7 @@
 				flex-wrap: wrap;
 			}
 
-			.uesr-loader {
+			.user-loader {
 				padding: 4em 0;
 				border: 2px dotted #000;
 				width: 50%;
@@ -126,13 +126,14 @@
 					<div class="opt">Contact</div>
 				</div>
 			</div>
-			<div class="adder">
+			<!-- <div class="adder"> -->
+			<div>
 				<div class="title"></div>
-				<input type="text" id="name" placeholder="Name" />
-				<input type="number" id="age" placeholder="Age" />
-				<button type="button" class="button" onclick="addUser()">
-					ADD
-				</button>
+				<form class="adder" onsubmit="addUser(event)">
+					<input type="text" id="name" placeholder="Name" />
+					<input type="number" id="age" placeholder="Age" />
+					<button type="submit" class="button">ADD</button>
+				</form>
 			</div>
 			<div class="content"></div>
 		</div>
@@ -141,6 +142,10 @@
 		<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-firestore.js"></script>
 		<script src="./firebase.config.js"></script>
 		<script>
+			// const btn = document.querySelector(".button");
+
+			// btn.disabled = true;
+
 			const get = (a) => {
 				return document.querySelector(a);
 			};
@@ -149,15 +154,19 @@
 				return document.createElement(a);
 			};
 
-			const setLoading = (isLoading) => {
+			const setLoading = (action) => {
 				const container = document.querySelector(".content");
 
 				let userLoader = create("div");
-				userLoader.innerText = "Loading users...";
+				userLoader.setAttribute("class", "user-loader");
 
-				userLoader.setAttribute("class", "uesr-loader");
-
-				if (isLoading) {
+				if (action === "empty") {
+					userLoader.innerText = "No users";
+					container.innerHTML = "";
+					container.append(userLoader);
+				} else if (action === true) {
+					userLoader.innerText = "Loading users...";
+					container.innerHTML = "";
 					container.append(userLoader);
 				} else {
 					container.innerHTML = "";
@@ -172,9 +181,13 @@
 
 					setLoading(false);
 
-					snapshot.forEach((doc) => {
-						makeCard(doc.data());
-					});
+					if (snapshot.size < 1) {
+						setLoading("empty");
+					} else {
+						snapshot.forEach((doc) => {
+							makeCard(doc.data());
+						});
+					}
 				} catch (error) {
 					document.querySelector(".content").innerHTML =
 						"<div>Error loading data</div>";
@@ -200,23 +213,40 @@
 				get(".content").append(card);
 			};
 
-			const addUser = () => {
-				const data = {
-					name: get("#name").value,
-					age: Number(get("#age").value),
-				};
+			const addUser = (e) => {
+				e.preventDefault();
 
-				db.collection("users")
-					.add({
-						name: data.name,
-						age: data.age,
-					})
-					.then(() => {
-						makeCard({
-							name: data.name,
-							age: data.age,
+				const btn = document.querySelector(".button");
+				btn.disabled = true; // disable AFTER click
+
+				try {
+					const data = {
+						name: get("#name").value,
+						age: Number(get("#age").value),
+					};
+
+					if (!data.name || !data.age) {
+						alert("Please fill all fields");
+						btn.disabled = false; // re-enable if validation fails
+						return;
+					}
+
+					db.collection("users")
+						.add(data)
+						.then(() => {
+							makeCard(data);
+
+							get("#name").value = "";
+							get("#age").value = "";
+						})
+						.catch((err) => console.error(err))
+						.finally(() => {
+							btn.disabled = false; // re-enable after request
 						});
-					});
+				} catch (error) {
+					console.error(error);
+					btn.disabled = false;
+				}
 			};
 		</script>
 	</body>
